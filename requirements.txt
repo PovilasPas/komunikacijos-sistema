@@ -1,0 +1,6 @@
+django==4.2.0
+djangorestframework
+django-cors-headers
+mysqlclient
+djangorestframework-simplejwt
+djangochannelsrestframework

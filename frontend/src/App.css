@@ -1,0 +1,12 @@
+html, body, #root {
+    height: 100%;
+    margin: 0px;
+}
+
+#main-container {
+    display: flex;
+    flex-flow: column;
+    height: 100%;
+}
+
+
