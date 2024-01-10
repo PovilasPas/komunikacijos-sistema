@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom"
+import { Routes, Route, Navigate } from "react-router-dom"
 import HomeView from "./Views/HomeView"
 import RegisterView from "./Views/RegisterView"
 import LoginView from "./Views/LoginView"
@@ -23,7 +23,7 @@ export const Content = ({showSidebar, handleSidebarToggle}) => {
                 <Route path="/channels/:channel" element={<ChannelView showSidebar={showSidebar} handleSidebarToggle={handleSidebarToggle} />}/>
             </Route>
             <Route path="/404" element={<NotFoundView />}/>
-            <Route path="*" element={<NotFoundView />} />
+            <Route path="*" element={<Navigate to="/404" replace/>} />
         </Routes>
     )
 }

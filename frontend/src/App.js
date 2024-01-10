@@ -6,10 +6,9 @@ import { Toolbar } from '@mui/material';
 import { SnackbarProvider } from 'notistack';
 import axios from 'axios';
 import { AuthProvider } from './Components/AuthContext';
-import * as c from './utils/Constants'
 import { useState } from 'react';
 
-axios.defaults.baseURL = `${c.BACKEND_HTTP_URL}`
+axios.defaults.baseURL = `${process.env.REACT_APP_HTTP_URL}`
 
 
 function App() {

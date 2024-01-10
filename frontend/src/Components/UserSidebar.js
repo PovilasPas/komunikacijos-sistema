@@ -37,15 +37,20 @@ const customSytles = (theme) => (
 function UserSidebar({mobileOpen, mobileToggle, users, handleAddOpen, handleEditOpen, channelUser}) {
     const isSmAndUp = useMediaQuery("(min-width:600px)")
     const isOwner = channelUser.role === 2
-    const determineUserRoleName = (id) => {
-        switch(id) {
+    const determineUserRoleName = (user) => {
+        let name = ''
+        switch(user.role) {
             case 2:
-                return 'Owner'
+                name = 'Owner'
+                break;
             case 1:
-                return 'Inviter'
+                name = 'Inviter'
+                break;
             default:
-                return 'User' 
+                name = 'User'
+                break;
         }
+        return !user.has_accepted ? 'unconfirmed ' + name : name
     }
     const userList = (
         <List sx={(theme) => customSytles(theme).list}>
@@ -67,11 +72,11 @@ function UserSidebar({mobileOpen, mobileToggle, users, handleAddOpen, handleEdit
                     <ListItem disablePadding>
                         {isOwner && channelUser.user.id !== user.user.id ? (
                             <ListItemButton onClick={() => handleEditOpen(i)}>
-                                <ListItemText primary={user.user.username} secondary={determineUserRoleName(user.role)}/>
+                                <ListItemText primary={user.user.username} secondary={determineUserRoleName(user)}/>
                             </ListItemButton>
                         ) : (
                             <Box width="100%" sx={(theme) => customSytles(theme).listItemBox}>
-                                <ListItemText primary={user.user.username} secondary={determineUserRoleName(user.role)}/>
+                                <ListItemText primary={user.user.username} secondary={determineUserRoleName(user)}/>
                             </Box>
                         )}
                     </ListItem>

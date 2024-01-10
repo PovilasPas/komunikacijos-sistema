@@ -3,9 +3,8 @@ import { enqueueSnackbar } from 'notistack'
 import UserSidebar from '../Components/UserSidebar'
 import UserDialog from '../Components/UserDialog'
 import Chat from '../Components/Chat'
-import { AuthContext } from '../Components/AuthContext'
 import * as c from '../utils/Constants'
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useVerifyOrRefresh } from '../utils/Hooks/VerifyOrRefreshHook'
 import { jwtDecode } from 'jwt-decode'
@@ -31,16 +30,23 @@ const customStyles = (theme) => (
         }
     }
 )
+
+const wsUrl = process.env.REACT_APP_WS_URL
+
+
+
 function ChannelView({showSidebar, handleSidebarToggle}) {
     const { channel } = useParams()
     const [users, setUsers] = useState([])
     const [websocketData, setWebsocketData] = useState(null)
     const [channelUser, setChannelUser] = useState({})
     const messageBoxRef = useRef(null)
+    const socketRef = useRef(null)
     const [message, setMessage] =  useState({
         msg: {
             text: ''
         },
+        sendingPrev: false,
         sending: false,
         errors: {}
     })
@@ -95,19 +101,28 @@ function ChannelView({showSidebar, handleSidebarToggle}) {
         })
     }
 
-
-    //errors
     const handleMessageSend = () => {
         verifyOrRefresh().then((token) => {
             if(!token) return
             setMessage({
                 ...message,
+                sendingPrev: false,
                 sending: true
             })
             axios.post(`channels/${channel}/messages/`, message.msg)
-                .catch((err) => {
+                .then(() => {
+                    setMessage({
+                        msg: {
+                            text: ''
+                        },
+                        sendingPrev: true,
+                        sending: false,
+                        errors: {}
+                    })
+                }).catch((err) => {
                     setMessage({
                         ...message,
+                        sendingPrev: true,
                         sending: false,
                         errors: {}
                     })
@@ -144,6 +159,12 @@ function ChannelView({showSidebar, handleSidebarToggle}) {
         })
     }
 
+    useEffect(() => {
+        if(message.sendingPrev && !message.sending) {
+            messageBoxRef.current.children[0].children[0].focus()
+            messageBoxRef.current.children[0].classList.add('Mui-focused')
+        }
+    }, [message.sending, message.sendingPrev])
 
     const handleUserDialogAdd = (e) => {
         e.preventDefault()
@@ -276,7 +297,7 @@ function ChannelView({showSidebar, handleSidebarToggle}) {
                 setUsers(res.data)
             }).catch((err) => {
                 if(err.response?.status === 404) {
-                    navigate('/404')
+                    navigate('/404', { options: { replace: true }})
                 }
                 else if(err.response?.status === 500) {
                     enqueueSnackbar(c.errorMessage500, {
@@ -312,7 +333,7 @@ function ChannelView({showSidebar, handleSidebarToggle}) {
                     setMessages(res.data)
                 }).catch((err) => {
                     if(err.response?.status === 404) {
-                        navigate('/404')
+                        navigate('/404', { options: { replace: true }})
                     }
                     else if(err.response?.status === 500) {
                         enqueueSnackbar(c.errorMessage500, {
@@ -350,7 +371,7 @@ function ChannelView({showSidebar, handleSidebarToggle}) {
                 setChannelUser(res.data)
             }).catch((err) => {
                 if(err.response?.status === 404) {
-                    navigate('/404')
+                    navigate('/404', { options: { replace: true }})
                 }
                 else if(err.response?.status === 500) {
                     enqueueSnackbar(c.errorMessage500, {
@@ -380,23 +401,15 @@ function ChannelView({showSidebar, handleSidebarToggle}) {
     }
 
     const initWs = () => {
-        let socket = null
         let isOpen = false
         const wait = verifyOrRefresh().then((token) => {
             if(!token) return
-            socket = new WebSocket(`${c.BACKEND_WS_URL}channels/${channel}/messages/?token=${token}`)
-            socket.onmessage = (e) => {
-                setMessage({
-                    msg: {
-                        text: ''
-                    },
-                    sending: false,
-                    errors: {}
-                })
+            socketRef.current = new WebSocket(`${wsUrl}channels/${channel}/messages/?token=${token}`)
+            socketRef.current.onmessage = (e) => {
                 const data = JSON.parse(e.data)
                 setWebsocketData(data)
             }
-            socket.onopen = () => {
+            socketRef.current.onopen = () => {
                 isOpen = true
             }
         }).catch((err) => {
@@ -414,8 +427,8 @@ function ChannelView({showSidebar, handleSidebarToggle}) {
         })
         return () => {
             wait.then(() => {
-                if(socket && isOpen)
-                    socket.close()
+                if(socketRef.current && isOpen)
+                    socketRef.current.close()
             })
         }
     }
@@ -430,10 +443,6 @@ function ChannelView({showSidebar, handleSidebarToggle}) {
 
     useEffect(() => {
         if(websocketData) {
-            if(channelUser.user.id === websocketData.user.id) {
-                messageBoxRef.current.children[0].children[0].focus()
-                messageBoxRef.current.children[0].classList.add('Mui-focused')
-            }
             setMessages([...messages, websocketData])
         }
     }, [websocketData])

@@ -3,4 +3,4 @@ djangorestframework
 django-cors-headers
 mysqlclient
 djangorestframework-simplejwt
-djangochannelsrestframework
+channels[daphne]
