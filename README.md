@@ -27,7 +27,7 @@
 
 Kuriamos sistemos prototipo komponentų diagrama pateikta žemiau matomame paveikslėlyje:
 
-![Komponentų diagrama](Components.png)
+![Komponentų diagrama](Components.PNG)
 
 Iš pateikto paveikslėlio matoma, kad sistema naudoja duomenų bazės komponentą, sistemos „backend“ dalis sudaryta iš 3 aplikacijų („Users“, „Core“, „Chat“), o sistemos „fronend“ dalis susidaro iš kelių skirtingų langų. „frontend“ ir „backend“ sistemos dalys komunikuoja naudojant REST API, o tam, kad žinutės kanaluose būtų pateikiamos realiu laiku naudojami „Django Channels“.
 
