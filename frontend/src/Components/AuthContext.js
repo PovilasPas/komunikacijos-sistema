@@ -14,7 +14,8 @@ export const AuthProvider = ({ children }) => {
         setAccessToken(token1)
         const token2 = localStorage.getItem('refresh')
         setRefreshToken(token2)
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token1}`
+        if(token1)
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token1}`
         setLoading(false)
     }, [])
 
